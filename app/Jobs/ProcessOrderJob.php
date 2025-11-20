@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Enums\Enums\OrderStatusEnum;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -34,15 +35,32 @@ class ProcessOrderJob implements ShouldQueue
     {
         DB::transaction(function () {
 
-            Log::info('Processing order: ' ,[$this->data]);
-            // $order = Order::firstOrCreate(
-            //     ['code' => $this->data['order_code']],
-            //     [
-            //         'customer_id' => $this->data['customer_id'],
-            //         'total' => $this->data['total']
-            //     ]
-            // );
-        });
+            Log::info('Processing order: ', [$this->data]);
+            $order = Order::firstOrCreate(
+                ['code' => $this->data['order_code']],
+                [
+                    'customer_id' => $this->data['customer_id'],
+                    'total' => $this->data['total']
+                ]
+            );
 
+            // Prevent duplicate processing
+            if ($order->status !== OrderStatusEnum::PENDING) {
+                return;
+            }
+
+            foreach ($this->data['items'] as $item) {
+                OrderItem::firstOrCreate(
+                    [
+                        'order_id'   => $order->id,
+                        'product_id' => $item['product_id'],
+                    ],
+                    [
+                        'quantity'   => $item['quantity'],
+                        'unit_price' => $item['unit_price'],
+                    ]
+                );
+            }
+        });
     }
 }
