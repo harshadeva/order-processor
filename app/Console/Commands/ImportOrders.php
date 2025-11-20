@@ -39,7 +39,7 @@ class ImportOrders extends Command
         Log::info("Importing orders from file: $path");
 
         // Sort the file
-        $sortedPath = storage_path('sorted_orders.csv');
+        $sortedPath = storage_path('app/public/sorted_orders.csv');
         $cmd = sprintf(
             'sort -t"," -k2,2 %s > %s',
             escapeshellarg($path),
