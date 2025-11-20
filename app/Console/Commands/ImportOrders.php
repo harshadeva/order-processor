@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\ProcessOrderJob;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\LazyCollection;
@@ -41,18 +42,17 @@ class ImportOrders extends Command
                 yield $line;
             }
             fclose($handle);
-        })->skip(1) // if header
+        })->skip(1)
             ->chunk(200)
             ->each(function ($chunk) {
                 foreach ($chunk as $row) {
                     
-                    // map CSV row to data array
                     $data = $this->mapRow($row);
+                    
+                    ProcessOrderJob::dispatch($data)->onQueue('orders');
                     Log::info('Queuing order', $data);
                 }
             });
-
-        $this->info("Import queued.");
 
         $this->info("Import queued.");
         return 0;
