@@ -28,9 +28,10 @@ class ImportOrders extends Command
      */
     public function handle()
     {
-        /* for unsorted files
-        sort -t',' -k2,2 large_orders.csv > sorted_orders.csv
+        /* 
+        docker exec -it laravel_app php artisan orders:import docs/dummy/large_orders.csv
         */
+        
         $path = $this->argument('file');
         if (!file_exists($path)) {
             $this->error("File not found: $path");
