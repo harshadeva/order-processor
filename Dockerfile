@@ -12,7 +12,11 @@ RUN apt-get update && apt-get install -y \
     unzip \
     git \
     curl \
+    supervisor \
     libpq-dev
+
+# Copy supervisor
+COPY docker/supervisor/laravel-queue.conf /etc/supervisor/conf.d/laravel-queue.conf
 
 # Install PHP extensions
 RUN docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd
