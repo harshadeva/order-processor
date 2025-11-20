@@ -5,7 +5,7 @@ namespace App\Jobs;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
@@ -34,13 +34,14 @@ class ProcessOrderJob implements ShouldQueue
     {
         DB::transaction(function () {
 
-            $order = Order::firstOrCreate(
-                ['code' => $this->data['order_code']],
-                [
-                    'customer_id' => $this->data['customer_id'],
-                    'total' => $this->data['total']
-                ]
-            );
+            Log::info('Processing order: ' ,[$this->data]);
+            // $order = Order::firstOrCreate(
+            //     ['code' => $this->data['order_code']],
+            //     [
+            //         'customer_id' => $this->data['customer_id'],
+            //         'total' => $this->data['total']
+            //     ]
+            // );
         });
 
     }
