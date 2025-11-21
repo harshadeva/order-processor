@@ -31,28 +31,9 @@ class ImportOrders extends Command
         /* 
         docker exec -it laravel_app php artisan orders:import docs/dummy/large_orders.csv
         */
-        
         $path = $this->argument('file');
-        if (!file_exists($path)) {
-            $this->error("File not found: $path");
-            return 1;
-        }
-        Log::info("Importing orders from file: $path");
-
-        // Sort the file
-        $sortedPath = storage_path('app/public/sorted_orders.csv');
-        $cmd = sprintf(
-            'sort -t"," -k2,2 %s > %s',
-            escapeshellarg($path),
-            escapeshellarg($sortedPath)
-        );
-        exec($cmd, $o, $status);
-
-        if ($status !== 0) {
-            $this->error("Sorting failed.");
-            return 1;
-        }
-        Log::info("Sorted file created at: $sortedPath");
+        $sortedPath   = storage_path('app/public/sorted_orders.csv');
+        $this->sortDocument($path,$sortedPath);
 
         $handle = fopen($sortedPath, 'r');
 
@@ -73,7 +54,7 @@ class ImportOrders extends Command
                 $headerSkipped = true;
                 continue;
             }
-
+            // Log::info('row', [$row]);
             $mapped = $this->mapRow($row);
 
             $orderCode = $mapped['order_code'];
@@ -113,6 +94,44 @@ class ImportOrders extends Command
         fclose($handle);
 
         $this->info("Orders import queued.");
+    }
+
+    private function sortDocument($path,$sortedPath)
+    {
+        if (!file_exists($path)) {
+            $this->error("File not found: $path");
+            return 1;
+        }
+        Log::info("Importing orders from file: $path");
+
+        $bodyPath = storage_path('app/public/orders_body.csv');
+
+        $handle = fopen($path, 'r');
+        $header = fgets($handle);
+        $bodyHandle = fopen($bodyPath, 'w');
+
+        while (($line = fgets($handle)) !== false) {
+            fwrite($bodyHandle, $line);
+        }
+        fclose($handle);
+        fclose($bodyHandle);
+
+        $cmd = sprintf(
+            'sort -t"," -k2,2 %s > %s',
+            escapeshellarg($bodyPath),
+            escapeshellarg($sortedPath)
+        );
+
+        exec($cmd, $output, $status);
+
+        if ($status !== 0) {
+            $this->error("Sorting failed with status code: $status");
+            return 1;
+        }
+
+        file_put_contents($sortedPath, $header . file_get_contents($sortedPath));
+
+        $this->info("Sorting complete. File saved to: $sortedPath");
     }
 
     private function mapRow(array $row)
