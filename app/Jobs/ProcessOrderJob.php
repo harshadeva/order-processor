@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Enums\Enums\OrderStatusEnum;
+use App\Enums\OrderStatusEnum;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -40,7 +40,8 @@ class ProcessOrderJob implements ShouldQueue
                 ['code' => $this->data['order_code']],
                 [
                     'customer_id' => $this->data['customer_id'],
-                    'total' => $this->data['total']
+                    'total' => $this->data['total'],
+                    'status'=> OrderStatusEnum::PENDING,
                 ]
             );
 
