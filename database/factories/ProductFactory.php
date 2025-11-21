@@ -19,7 +19,7 @@ class ProductFactory extends Factory
         return [
             'name'        => $this->faker->words(2, true),
             'unit_price'  => $this->faker->randomFloat(2, 50, 2000),
-            'sku'         => strtoupper($this->faker->bothify('SKU-#####')),
+            'sku'         => strtoupper($this->faker->unique()->bothify('SKU-#####')),
             'stock'       => $this->faker->numberBetween(10, 500),
             'reserved'    => 0,
         ];
