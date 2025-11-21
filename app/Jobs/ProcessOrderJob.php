@@ -2,16 +2,17 @@
 
 namespace App\Jobs;
 
-use App\Enums\OrderStatusEnum;
 use App\Models\Order;
 use App\Models\OrderItem;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
+use App\Enums\OrderStatusEnum;
+use App\Services\ReserveStockService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
 
 class ProcessOrderJob implements ShouldQueue
 {
@@ -40,13 +41,14 @@ class ProcessOrderJob implements ShouldQueue
                 ['code' => $this->data['order_code']],
                 [
                     'customer_id' => $this->data['customer_id'],
-                    'total' => $this->data['total'],
-                    'status'=> OrderStatusEnum::PENDING,
+                    'total' => 0,
+                    'status' => OrderStatusEnum::PENDING,
                 ]
             );
 
             // Prevent duplicate processing
             if ($order->status !== OrderStatusEnum::PENDING) {
+                Log::info("Order ID {$order->id} has already been processed with status {$order->status}. Skipping.");
                 return;
             }
 
@@ -57,10 +59,23 @@ class ProcessOrderJob implements ShouldQueue
                         'product_id' => $item['product_id'],
                     ],
                     [
-                        'quantity'   => $item['quantity'],
+                        'qty'   => $item['quantity'],
                         'unit_price' => $item['unit_price'],
+                        'total' => bcmul($item['unit_price'], $item['quantity'], 2)
                     ]
                 );
+            }
+
+            $order->update([
+                'total' => OrderItem::where('order_id', $order->id)->sum('total'),
+            ]);
+
+            $reserved = app(ReserveStockService::class)->reserve($order);
+
+            if (! $reserved) {
+                $order->update(['status' => OrderStatusEnum::FAILED]);
+                Log::error("Order ID {$order->id} processing failed due to insufficient stock.");
+                return;
             }
         });
     }
