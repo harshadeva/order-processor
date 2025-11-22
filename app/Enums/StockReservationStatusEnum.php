@@ -2,9 +2,9 @@
 
 namespace App\Enums;
 
-enum StockReservationStatusEnum
+enum StockReservationStatusEnum: int
 {
-    public const RESERVED = 1;
-    public const RELEASED = 2;
-    public const CONSUMED = 3;
+    case RESERVED = 1;
+    case RELEASED = 2;
+    case CONSUMED = 3;
 }

@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Jobs\ProcessOrderJob;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\LazyCollection;
@@ -33,7 +34,10 @@ class ImportOrders extends Command
         */
         $path = $this->argument('file');
         $sortedPath   = storage_path('app/public/sorted_orders.csv');
-        $this->sortDocument($path,$sortedPath);
+        $documentSortError = $this->sortDocument($path,$sortedPath);
+        if($documentSortError != null){
+            return $documentSortError;
+        }
 
         $handle = fopen($sortedPath, 'r');
 
@@ -96,11 +100,11 @@ class ImportOrders extends Command
         $this->info("Orders import queued.");
     }
 
-    private function sortDocument($path,$sortedPath)
+    private function sortDocument($path,$sortedPath): ?string
     {
         if (!file_exists($path)) {
             $this->error("File not found: $path");
-            return 1;
+            return 'File not found';
         }
         Log::info("Importing orders from file: $path");
 
@@ -126,12 +130,13 @@ class ImportOrders extends Command
 
         if ($status !== 0) {
             $this->error("Sorting failed with status code: $status");
-            return 1;
+            return 'Sorting failed';
         }
 
         file_put_contents($sortedPath, $header . file_get_contents($sortedPath));
 
         $this->info("Sorting complete. File saved to: $sortedPath");
+        return null;
     }
 
     private function mapRow(array $row)

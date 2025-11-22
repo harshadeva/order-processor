@@ -2,11 +2,11 @@
 
 namespace App\Enums;
 
-enum OrderStatusEnum
+enum OrderStatusEnum: int
 {
-    public const PENDING = 1;
-    public const RESERVED = 2;
-    public const PROCESSING = 3;
-    public const COMPLETED = 4;
-    public const FAILED = 5;
+    case PENDING = 1;
+    case RESERVED = 2;
+    case PROCESSING = 3;
+    case COMPLETED = 4;
+    case FAILED = 5;
 }

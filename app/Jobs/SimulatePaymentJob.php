@@ -28,7 +28,7 @@ class SimulatePaymentJob implements ShouldQueue
     public function handle(): void
     {
         Log::info("Simulating payment for order code {$this->orderCode}");
-        $success = rand(0, 100) > 20;
+        $success = rand(0, 100) > 50;
         $this->simulatePayment($this->orderCode, $success ? 'success' : 'failure');
     }
 

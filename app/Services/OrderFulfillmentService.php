@@ -19,7 +19,7 @@ class OrderFulfillmentService
                 $product = Product::where('id', $item->product_id)->lockForUpdate()->first();
                 $available = $product->stock - $product->reserved;
                 if ($available < $item->qty) {
-                    Log::info("Insufficient stock for product ID {$product->id}. Available: {$available}, Required: {$item->qty}");
+                    Log::info("-- Order Code {$order->code} : Insufficient stock for product ID {$product->id}. Available: {$available}, Required: {$item->qty}");
                     $this->rollback($order);
                     return false;
                 }
@@ -33,7 +33,7 @@ class OrderFulfillmentService
                     'qty' => $item->qty,
                     'status' => StockReservationStatusEnum::RESERVED,
                 ]);
-                Log::info("Reserved {$item->qty} units of product ID {$product->id} for order ID {$order->id}");
+                Log::info("-- Order Code {$order->code} : Reserved {$item->qty} units of product ID {$product->id}");
             }
             $order->update(['status' => OrderStatusEnum::RESERVED]);
             return true;
@@ -43,7 +43,7 @@ class OrderFulfillmentService
     public function rollback(Order $order): void
     {
         DB::transaction(function () use($order): void {
-            Log::info("Releasing reserved order: {$order->code}");
+            Log::info("-- Order Code {$order->code} : Stock releasing");
 
             $reservations = StockReservation::where('order_id', $order->id)
                 ->where('status', StockReservationStatusEnum::RESERVED)
@@ -54,11 +54,11 @@ class OrderFulfillmentService
                 $product->save();
 
                 $reservation->update(['status' => StockReservationStatusEnum::RELEASED]);
-                Log::info("Released reservation of {$reservation->qty} units of product ID {$product->id} for order ID {$order->id}");
+                Log::info("-- Order Code {$order->code} : Released reservation of {$reservation->qty} units of product ID {$product->id}");
             }
 
             $order->update(['status' => OrderStatusEnum::FAILED]);
-            Log::info("Order {$order->code} marked as failed");
+            Log::info("-- Order Code {$order->code} : marked as failed");
         });
     }
 
@@ -66,7 +66,7 @@ class OrderFulfillmentService
     public function finalize(Order $order): void
     {
         DB::transaction(function () use($order): void {
-            Log::info("Finalizing order: {$order->code}");
+            Log::info("-- Order Code {$order->code} : Finalizing order");
 
             $reservations = StockReservation::where('order_id', $order->id)
                 ->where('status', StockReservationStatusEnum::RESERVED)
@@ -89,7 +89,7 @@ class OrderFulfillmentService
 
             $order->update(['status' => OrderStatusEnum::COMPLETED]);
 
-            Log::info("Order {$order->code} completed successfully");
+            Log::info("-- Order Code {$order->code} : completed successfully");
         });
     }
 }

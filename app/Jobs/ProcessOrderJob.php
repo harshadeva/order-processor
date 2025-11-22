@@ -34,7 +34,8 @@ class ProcessOrderJob implements ShouldQueue
      */
     public function handle(): void
     {
-        DB::transaction(function (): void {
+        $reservationSuccess = false;
+        DB::transaction(function () use (&$reservationSuccess): void {
 
             Log::info('Processing order: ', [$this->data]);
             $order = Order::firstOrCreate(
@@ -48,7 +49,8 @@ class ProcessOrderJob implements ShouldQueue
 
             // Prevent duplicate processing
             if ($order->status !== OrderStatusEnum::PENDING) {
-                Log::info("Order ID {$order->id} ({$order->code}) has already been processed with status {$order->status}. Skipping.");
+                $statusName = OrderStatusEnum::from(3)->name;
+                Log::info("Order Code {$order->code} : has already been processed with status {$statusName}. Skipping to the next order.");
                 return;
             }
 
@@ -72,12 +74,19 @@ class ProcessOrderJob implements ShouldQueue
 
             $reserved = app(OrderFulfillmentService::class)->reserve($order);
 
-            if (! $reserved) {
-                Log::error("Order ID {$order->id} processing failed due to insufficient stock.");
+            if (!$reserved) {
+                Log::error("Order Code {$order->code} : processing failed due to insufficient stock.");
                 return;
             }
+            $reservationSuccess = true;
         });
-        Log::info("Dispatching payment simulation for order code {$this->data['order_code']}");
+
+        if (!$reservationSuccess) {
+            Log::info("Order Code {$this->data['order_code']} : Skipping payment simulation.reservation not success.");
+            return;
+        }
+        
+        Log::info("Order Code {$this->data['order_code']} : Dispatching payment simulation");
         SimulatePaymentJob::dispatch($this->data['order_code']);
     }
 }
