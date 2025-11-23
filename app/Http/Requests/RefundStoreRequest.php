@@ -4,10 +4,17 @@ namespace App\Http\Requests;
 
 use App\Models\Order;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Log;
 
 class RefundStoreRequest extends FormRequest
 {
+    protected function failedValidation(Validator $validator)
+    {
+        throw new HttpResponseException(response()->json($validator->errors(), 422));
+    }
+
     public function authorize(): bool
     {
         return true;
@@ -16,33 +23,10 @@ class RefundStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'order_id' => 'required|exists:orders,id',
-            'amount'   => 'required|numeric|min:0.01',
-            'reason'   => 'nullable|string|max:255',
-        ];
-    }
-
-    /**
-     * Add custom validation after default rules.
-     */
-    public function after(): array
-    {
-        return [
-            function () {
-                $order = Order::find($this->order_id);
-
-                if (! $order) {
-                    return;
-                }
-
-                $refundableBalance = $order->total - $order->refunded_total;
-                if ($this->amount > $refundableBalance) {
-                    $this->errors()->add(
-                        'amount',
-                        'Refund amount cannot exceed the remaining refundable balance of ' . number_format($refundableBalance, 2)
-                    );
-                }
-            }
+            'order_id'         => 'required|exists:orders,id',
+            'external_id'  => 'required|unique:refunds,idempotency_key',
+            'amount'           => 'required|numeric|min:0.01',
+            'reason'           => 'nullable|string|max:255',
         ];
     }
 }

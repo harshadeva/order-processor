@@ -3,18 +3,24 @@
 namespace App\Services;
 
 use App\Jobs\RefundJob;
-use App\Models\Order;
-use App\Models\Product;
-use App\Enums\OrderStatusEnum;
-use App\Models\StockReservation;
-use App\Enums\StockReservationStatusEnum;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use App\Enums\RefundStatusEnum;
+use App\Models\Refund;
 
 class RefundService
 {
     public function refund(array $data)
     {
-         RefundJob::dispatch($data);
+        $record = Refund::updateOrCreate(
+            [
+                'idempotency_key' => $data['external_id'],
+                'order_id' => $data['order_id'],
+            ],
+            [
+                'amount'   => $data['amount'],
+                'reason' => $data['reason'] ?? null,
+                'status' => RefundStatusEnum::PENDING
+            ]
+        );
+        RefundJob::dispatch($record->id);
     }
 }
