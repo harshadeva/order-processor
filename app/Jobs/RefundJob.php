@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Enums\RefundStatusEnum;
 use App\Models\Order;
 use App\Models\Refund;
+use App\Services\KPIService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
@@ -47,5 +48,10 @@ class RefundJob implements ShouldQueue
             'processed_at' => now(),
         ]);
         Log::info('Refund processed: ', [$refund]);
+
+         // Update KPIs
+        KPIService::decrementRevenue($refund->amount, $order->created_at);
+        KPIService::decreaseCustomerScore($order->customer_id, $refund->amount);
+        Log::info('Leaderboard updated: ' . $refund->id);
     }
 }

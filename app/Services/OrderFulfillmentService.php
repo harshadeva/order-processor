@@ -15,7 +15,7 @@ class OrderFulfillmentService
 {
     public function reserve(Order $order): bool
     {
-        return DB::transaction(function () use($order) {
+        return DB::transaction(function () use ($order) {
             $items = $order->orderItems->sortBy('product_id'); // When i test with large orders some orders caused for deadlock. sorting items by product_id to reduce deadlock chances
             foreach ($items as $item) {
                 $product = Product::where('id', $item->product_id)->lockForUpdate()->first();
@@ -44,7 +44,7 @@ class OrderFulfillmentService
 
     public function rollback(Order $order): void
     {
-        DB::transaction(function () use($order): void {
+        DB::transaction(function () use ($order): void {
             Log::info("-- Order Code {$order->code} : Stock releasing");
 
             $reservations = StockReservation::where('order_id', $order->id)
@@ -68,7 +68,7 @@ class OrderFulfillmentService
 
     public function finalize(Order $order): void
     {
-        DB::transaction(function () use($order): void {
+        DB::transaction(function () use ($order): void {
             Log::info("-- Order Code {$order->code} : Finalizing order");
 
             $reservations = StockReservation::where('order_id', $order->id)
@@ -94,6 +94,11 @@ class OrderFulfillmentService
             $order->update(['status' => OrderStatusEnum::COMPLETED]);
             $order->customer->notify(new OrderSuccessNotification($order));
             Log::info("-- Order Code {$order->code} : completed successfully");
+
+            KPIService::incrementRevenue($order->amount,$order->created_at);
+            KPIService::incrementOrderCount($order->created_at);
+            KPIService::incrementCustomerScore($order->customer_id, $order->total);
+            Log::info("-- Order Code {$order->code} : KPIs updated");
         });
     }
 }
