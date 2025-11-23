@@ -1,5 +1,13 @@
 # Order Processing System – Laravel, Horizon, Redis, PostgreSQL, Docker
 
+![Laravel 12](https://img.shields.io/badge/Laravel-10-ff2d20?logo=laravel&logoColor=white) ![PHP 8.2+](https://img.shields.io/badge/PHP-8.2%2B-777BB4?logo=php&logoColor=white)
+![PostgreSQL 17](https://img.shields.io/badge/PostgreSQL-17-336791?logo=postgresql&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-Latest-dc382d?logo=redis&logoColor=white)
+![Horizon](https://img.shields.io/badge/Horizon-Queue%20Dashboard-e9573f?logo=laravel&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)
+![Deadlock Safe](https://img.shields.io/badge/Stock-Deadlock%20Safe-blueviolet)
+![Idempotent Refunds](https://img.shields.io/badge/Refunds-Idempotent-brightgreen)
+
 A highly scalable and production-ready order processing system built with **Laravel 10+**, **Laravel Horizon**, **Redis**, **PostgreSQL**, and fully containerized using **Docker**.  
 
 This project demonstrates real-world challenges such as:
@@ -108,5 +116,28 @@ Includes:
 - Refund API (POST)
 
 - Health Check API (GET)
+
+
+## 🏗 Workflow Overview
+
+~~~sh
+CSV Import
+   ↓
+Stream → Group by order_code → Dispatch ProcessOrderJob (per order)
+   ↓
+ProcessOrderJob
+   → Create draft order + items
+   → OrderFulfillmentService::reserve()  (pessimistic locking)
+       ↓
+   Success → Dispatch SimulatePaymentJob
+   Failed  → Mark order as failed
+       ↓
+SimulatePaymentJob → Random success/failure
+       ↓
+PaymentCallbackJob
+   → On success: finalize()  → commit stock, update KPIs
+   → On failure: rollback() → release reservation, update KPIs
+
+~~~
 
 # Enjoy The Project. Thank you..!
