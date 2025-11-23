@@ -8,7 +8,10 @@
 ![Deadlock Safe](https://img.shields.io/badge/Stock-Deadlock%20Safe-blueviolet)
 ![Idempotent Refunds](https://img.shields.io/badge/Refunds-Idempotent-brightgreen)
 
-A highly scalable and production-ready order processing system built with **Laravel 10+**, **Laravel Horizon**, **Redis**, **PostgreSQL**, and fully containerized using **Docker**.  
+**Built by Harshadeva Priyankara Bandara**  
+https://github.com/harshadeva
+
+A highly scalable and production-ready order processing system built with **Laravel 12**, **Laravel Horizon**, **Redis**, **PostgreSQL**, and fully containerized using **Docker**.  
 
 This project demonstrates real-world challenges such as:
 - Large CSV order imports (thousands of rows)
