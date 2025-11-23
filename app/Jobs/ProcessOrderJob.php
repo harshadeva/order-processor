@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Enums\OrderStatusEnum;
+use App\Notifications\OrderSuccessNotification;
 use App\Services\OrderFulfillmentService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -18,14 +19,12 @@ class ProcessOrderJob implements ShouldQueue
 {
     use Dispatchable, Queueable, InteractsWithQueue, SerializesModels;
 
-    public $data;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(array $data)
+    public function __construct(protected array $data)
     {
-        $this->data = $data;
     }
 
 
@@ -63,13 +62,13 @@ class ProcessOrderJob implements ShouldQueue
                     [
                         'qty'   => $item['quantity'],
                         'unit_price' => $item['unit_price'],
-                        'total' => bcmul($item['unit_price'], $item['quantity'], 2)
+                        'total' => round(bcmul($item['unit_price'], $item['quantity'], 2),2)
                     ]
                 );
             }
 
             $order->update([
-                'total' => OrderItem::where('order_id', $order->id)->sum('total'),
+                'total' => round(OrderItem::where('order_id', $order->id)->sum('total'),2),
             ]);
 
             $reserved = app(OrderFulfillmentService::class)->reserve($order);
@@ -79,7 +78,7 @@ class ProcessOrderJob implements ShouldQueue
                 return;
             }
             $reservationSuccess = true;
-        });
+        },5);
 
         if (!$reservationSuccess) {
             Log::info("Order Code {$this->data['order_code']} : Skipping payment simulation.reservation not success.");
