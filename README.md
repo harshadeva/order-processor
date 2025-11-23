@@ -1,6 +1,6 @@
 # Order Processing System – Laravel, Horizon, Redis, PostgreSQL, Docker
 
-![Laravel 12](https://img.shields.io/badge/Laravel-10-ff2d20?logo=laravel&logoColor=white) ![PHP 8.2+](https://img.shields.io/badge/PHP-8.2%2B-777BB4?logo=php&logoColor=white)
+![Laravel 12](https://img.shields.io/badge/Laravel-12-ff2d20?logo=laravel&logoColor=white) ![PHP 8.2+](https://img.shields.io/badge/PHP-8.2%2B-777BB4?logo=php&logoColor=white)
 ![PostgreSQL 17](https://img.shields.io/badge/PostgreSQL-17-336791?logo=postgresql&logoColor=white)
 ![Redis](https://img.shields.io/badge/Redis-Latest-dc382d?logo=redis&logoColor=white)
 ![Horizon](https://img.shields.io/badge/Horizon-Queue%20Dashboard-e9573f?logo=laravel&logoColor=white)
