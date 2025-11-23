@@ -95,7 +95,7 @@ class OrderFulfillmentService
             $order->customer->notify(new OrderSuccessNotification($order));
             Log::info("-- Order Code {$order->code} : completed successfully");
 
-            KPIService::incrementRevenue($order->amount,$order->created_at);
+            KPIService::incrementRevenue($order->total,$order->created_at);
             KPIService::incrementOrderCount($order->created_at);
             KPIService::incrementCustomerScore($order->customer_id, $order->total);
             Log::info("-- Order Code {$order->code} : KPIs updated");
