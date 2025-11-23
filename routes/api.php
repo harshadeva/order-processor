@@ -3,4 +3,7 @@
 use App\Http\Controllers\RefundController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/refunds', [RefundController::class, 'store']);
+Route::get('up', function(){
+    return 'Application is working';
+});
+Route::post('refunds', [RefundController::class, 'store']);

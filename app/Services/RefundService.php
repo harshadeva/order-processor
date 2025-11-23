@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 
 class RefundService
 {
-    public function refund(array $data): bool
+    public function refund(array $data)
     {
          RefundJob::dispatch($data);
     }
