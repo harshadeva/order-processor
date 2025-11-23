@@ -15,25 +15,24 @@ RUN apt-get update && apt-get install -y \
     supervisor \
     libpq-dev
 
-# Copy supervisor
-COPY docker/supervisor/laravel-queue.conf /etc/supervisor/conf.d/laravel-queue.conf
+# Install PHP extensions (including pcntl + Redis)
+RUN pecl install redis \
+    && docker-php-ext-enable redis
 
-# Install PHP extensions
 RUN docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Set working directory
-WORKDIR /var/www
+# Copy Supervisor config
+COPY docker/supervisor/horizon.conf /etc/supervisor/conf.d/horizon.conf
+COPY docker/supervisor/php-fpm.conf /etc/supervisor/conf.d/php-fpm.conf
 
-# Copy app files
+WORKDIR /var/www
 COPY . .
 
-# Install dependencies
 RUN composer install --no-interaction
 
-# Permissions
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
-CMD ["php-fpm"]
+CMD ["/usr/bin/supervisord", "-n"]

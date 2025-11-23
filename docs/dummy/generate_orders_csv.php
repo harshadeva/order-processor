@@ -1,6 +1,6 @@
 <?php
 
-$rows = 5; // number of rows
+$rows = 30000; // number of rows
 $filename = __DIR__."/large_orders.csv";
 
 $fp = fopen($filename, 'w');
