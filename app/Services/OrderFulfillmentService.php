@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Enums\OrderStatusEnum;
 use App\Models\StockReservation;
 use App\Enums\StockReservationStatusEnum;
+use App\Notifications\OrderFailedNotification;
 use App\Notifications\OrderSuccessNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -61,6 +62,7 @@ class OrderFulfillmentService
             }
 
             $order->update(['status' => OrderStatusEnum::FAILED]);
+            $order->customer->notify(new OrderFailedNotification($order));
             Log::info("-- Order Code {$order->code} : marked as failed");
         });
     }

@@ -9,15 +9,11 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\LogMessage;
 use Illuminate\Support\Facades\Log;
-
-class OrderSuccessNotification extends Notification implements ShouldQueue
+class OrderFailedNotification extends Notification
 {
     use Queueable;
 
-    /**
-     * Create a new notification instance.
-     */
-    public function __construct(protected Order $order)
+     public function __construct(protected Order $order)
     {
         $this->afterCommit();
     }
@@ -29,7 +25,7 @@ class OrderSuccessNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        Log::channel('notification-log')->info('Order completed successfully', [
+        Log::channel('notification-log')->info('Order failed', [
             'order_id' => $this->order->id,
             'customer_id' => $this->order->customer_id,
         ]);
@@ -42,8 +38,8 @@ class OrderSuccessNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->line('Your order has been completed successfully.')
-            ->line('Thank you for using our order!');
+            ->line('Your order has failed to process.')
+            ->line('Thank you for using our application!');
     }
 
     /**

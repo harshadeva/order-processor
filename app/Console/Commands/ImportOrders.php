@@ -29,9 +29,6 @@ class ImportOrders extends Command
      */
     public function handle()
     {
-        /* 
-        docker exec -it laravel_app php artisan orders:import docs/dummy/large_orders.csv
-        */
         $path = $this->argument('file');
         $sortedPath   = storage_path('app/public/sorted_orders.csv');
         $documentSortError = $this->sortDocument($path,$sortedPath);
