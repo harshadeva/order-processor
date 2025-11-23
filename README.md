@@ -1,59 +1,112 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Order Processing System – Laravel, Horizon, Redis, PostgreSQL, Docker
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A highly scalable and production-ready order processing system built with **Laravel 10+**, **Laravel Horizon**, **Redis**, **PostgreSQL**, and fully containerized using **Docker**.  
 
-## About Laravel
+This project demonstrates real-world challenges such as:
+- Large CSV order imports (thousands of rows)
+- Atomic stock reservation with concurrency safety
+- Two-phase order fulfillment (reserve → payment → finalize/rollback)
+- Payment simulation with callback handling
+- KPI tracking & leaderboards using Redis
+- Refund processing
+- Queue monitoring via Horizon
+- Deadlock & race condition testing
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Perfect for interviews, architecture discussions, or as a boilerplate for e-commerce backends.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 📁 Project Structure
+~~~sh
+docs/
+├── erd.png                     # Entity Relationship Diagram
+├── api_collection.json         # Postman / Insomnia collection
+├── sample_csv_generator.php    # Generates large test CSV
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-## Learning Laravel
+docker/
+├── nginx/default.conf
+└── supervisor
+    └── horizon.conf
+    └── php-fpm.conf
+    
+└── README.md                   # You are here
+~~~
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## How to Run
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Follow the steps below to set up and run the full system.
 
-## Laravel Sponsors
+You need to have installed Docker on you system
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+### **1. Start Docker Containers**
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Build and start all services (PHP-FPM, Nginx, Redis, Postgres, Horizon workers):
 
-## Contributing
+```sh
+docker-compose up --build
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+###  **2. Run Migrations and Seeders**
 
-## Code of Conduct
+Run database migrations and seed data inside the app container:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```sh
+docker exec -it app php artisan migrate --seed
+```
+### **3. Generate Sample CSV File**
 
-## Security Vulnerabilities
+Generate a large random CSV dataset for testing:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```sh
+docker exec -it app php docs/dummy/generate_orders_csv.php
+```
 
-## License
+The file will be created at:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+docs/dummy/large_orders.csv
+
+### **4. Import Orders from CSV**
+
+Use the queued import command. Horizon will automatically process jobs:
+
+```sh
+docker exec -it app php artisan orders:import docs/dummy/large_orders.csv
+```
+
+## 📊 Horizon Dashboard
+Accessible at:
+```sh
+http://localhost:8000/horizon
+```
+To clear dashboard data:
+```sh
+docker exec -it app php artisan horizon:clear
+docker exec -it app php artisan queue:flush
+```
+
+## 📦 Redis Access
+Redis Insight (recommended)
+Download from: https://redis.com/redis-enterprise/redis-insight/
+
+Connect to Redis using:
+
+~~~sh
+Host: localhost
+Port: 6379
+~~~
+
+## Refund API & Health Check API
+API collection is available in:
+
+~~~sh
+docs/api_collection.json
+~~~
+
+Includes:
+
+- Refund API (POST)
+
+- Health Check API (GET)
+
+# Enjoy The Project. Thank you..!

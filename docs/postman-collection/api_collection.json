@@ -1,0 +1,59 @@
+{
+	"info": {
+		"_postman_id": "65f54ed1-4b47-4e8c-bec2-681a1650399b",
+		"name": "OrderProcessor",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25126583"
+	},
+	"item": [
+		{
+			"name": "API  health check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/api/up",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"up"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Refund",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"order_id\": 2,\r\n    \"external_id\":\"2hh\",\r\n    \"amount\": 100,\r\n    \"reason\": \"Test\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/refunds",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"refunds"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
