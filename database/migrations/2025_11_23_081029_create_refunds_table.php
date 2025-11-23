@@ -18,6 +18,7 @@ return new class extends Migration
             $table->decimal('amount', 12, 2);
             $table->string('reason', 255)->nullable();
             $table->tinyInteger('status')->default(1);
+            $table->timestamp('processed_at')->nullable();
             $table->timestamps();
         });
     }

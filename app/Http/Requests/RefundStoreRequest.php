@@ -29,4 +29,26 @@ class RefundStoreRequest extends FormRequest
             'reason'           => 'nullable|string|max:255',
         ];
     }
+
+     public function after(): array
+    {
+        return [
+            function ($validator) {
+                $order = Order::find($this->order_id);
+
+                if (! $order) {
+                    return;
+                }
+
+                $refundableBalance = $order->total - $order->refunded_total;
+
+                if ($this->amount > $refundableBalance) {
+                    $validator->errors()->add(
+                        'amount',
+                        'Refund amount cannot exceed remaining refundable balance of ' . number_format($refundableBalance, 2)
+                    );
+                }
+            }
+        ];
+    }
 }
