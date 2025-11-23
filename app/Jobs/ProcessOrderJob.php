@@ -48,7 +48,7 @@ class ProcessOrderJob implements ShouldQueue
 
             // Prevent duplicate processing
             if ($order->status !== OrderStatusEnum::PENDING) {
-                $statusName = OrderStatusEnum::from(3)->name;
+                $statusName = OrderStatusEnum::from(OrderStatusEnum::PENDING->value)->name;
                 Log::info("Order Code {$order->code} : has already been processed with status {$statusName}. Skipping to the next order.");
                 return;
             }
