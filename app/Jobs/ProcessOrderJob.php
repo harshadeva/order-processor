@@ -34,7 +34,7 @@ class ProcessOrderJob implements ShouldQueue
     public function handle(): void
     {
         $reservationSuccess = false;
-        DB::transaction(function () use (&$reservationSuccess): void {
+        // DB::transaction(function () use (&$reservationSuccess): void {
 
             Log::info('Processing order: ', [$this->data]);
             $order = Order::firstOrCreate(
@@ -78,7 +78,7 @@ class ProcessOrderJob implements ShouldQueue
                 return;
             }
             $reservationSuccess = true;
-        },5);
+        // },5);
 
         if (!$reservationSuccess) {
             Log::info("Order Code {$this->data['order_code']} : Skipping payment simulation.reservation not success.");
