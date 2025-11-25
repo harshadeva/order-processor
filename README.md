@@ -143,4 +143,8 @@ PaymentCallbackJob
 
 ~~~
 
+## Notes for Reviewer
+**Minor post-submission fixes are available in the `bugfix/after-submission-fixes` branch.**  
+Review optional - the `main` branch contains the original on-time submission.
+
 # Enjoy The Project. Thank you..!
